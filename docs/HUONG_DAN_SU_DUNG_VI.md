@@ -140,24 +140,32 @@ Khi frame lỗi/mất link, thư viện neutralize input và tự recovery.
 
 ## 9. Tổ chức examples
 
-Nên học theo thứ tự:
+Không cần học qua nhiều sketch rời rạc. Menu chính chỉ còn ba template:
 
 ```text
-BasicRead
-   ↓
-DebugMonitor
-   ↓
-ButtonEvents / JoystickDirections
-   ↓
-RawAnalogTest / ConnectionRecovery
-   ↓
-CustomSPI hoặc LegacyBitBang nếu phần cứng cần
+ControllerTemplate  -> copy vào project và điền các hàm TODO
+Diagnostics         -> kiểm tra tay cầm/link/raw/reconnect
+ConnectionModes     -> đổi SPI / custom SPI / BitBang
 ```
 
-Thư viện PS2 **không gắn cứng hành vi robot**. Ví dụ lái xe nằm ở `TungLam_OmniMecanum_4WD`:
+`ControllerTemplate` đã chia sẵn:
 
-- `PS2RobotControl`: phong cách RoboBall/V5, joystick phải xoay và ưu tiên cao hơn joystick trái.
-- `PS2RobotVectorMix`: tịnh tiến và quay đồng thời bằng vx/vy/wz.
+```text
+loop()
+  -> ps2.update()
+  -> onControllerLost() nếu mất link
+  -> handleLeftStick()
+  -> handleRightStick()
+  -> handleButtons()
+       ↓
+     USER FUNCTIONS
+```
+
+Người dùng chủ yếu chỉ sửa phần **USER FUNCTIONS**, ví dụ `onLeftUp()`, `onCrossPressed()`, `onR1Held()`.
+
+Các sketch cũ chi tiết hơn vẫn được lưu tại `extras/reference-examples/`.
+
+Thư viện PS2 **không gắn cứng hành vi robot**. Template lái xe hoàn chỉnh nằm ở `TungLam_OmniMecanum_4WD/examples/PS2RobotControl`.
 
 ## 10. Phong cách điều khiển đã dùng trong các project RoboBall cũ
 

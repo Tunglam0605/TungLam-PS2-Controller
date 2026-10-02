@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 - 2026-10-02
+
+### Example architecture
+- Reduced the Arduino IDE menu from nine focused demos to three project-oriented templates: `ControllerTemplate`, `Diagnostics`, and `ConnectionModes`.
+- `ControllerTemplate` exposes ready-made user hooks for stick directions, button events, and controller-loss fail-safe so a user can copy the sketch and fill only project behavior.
+- Consolidated link, event, raw-state and reconnect testing into `Diagnostics`.
+- Consolidated default SPI, explicit SPI bus and BitBang setup into `ConnectionModes`.
+- Moved the previous detailed examples to `extras/reference-examples/` instead of deleting them.
+
+### Compatibility
+- No PS2 protocol, filtering, reconnect, timing or public API behavior changed.
+- Real PS2 receiver hardware validation remains pending.
+
 ## 0.4.1 - 2026-10-02
 
 ### Documentation and examples

@@ -347,33 +347,40 @@ if (millis() - lastPrint >= 100) {
 
 ### Examples
 
-Nếu mới dùng thư viện, chỉ cần bắt đầu với **2 example**:
+Menu `File → Examples → TungLam_PS2` được cố ý giữ **chỉ 3 example chính**:
 
-| Example | Khi nào dùng |
+| Example | Dùng khi nào |
 |---|---|
-| `BasicRead` | Học API production tối thiểu: `update()`, `connected()`, button, joystick; không Serial, không delay |
-| `DebugMonitor` | Khi cần kiểm tra tay cầm thật trên Serial; chỉ in khi state thay đổi |
+| `ControllerTemplate` | **Bắt đầu project mới.** Copy sketch này rồi điền chức năng vào các hàm `onLeftUp()`, `onCrossPressed()`, `onControllerLost()`... |
+| `Diagnostics` | Test tay cầm thật: link, button, joystick, raw/filtered state và reconnect trên Serial |
+| `ConnectionModes` | Khi cần đổi giữa SPI mặc định, SPI bus chỉ định hoặc BitBang |
 
-Sau đó mới dùng các example chuyên biệt:
+Luồng sử dụng khuyến nghị:
 
-| Example | Mục đích | Serial |
-|---|---|---|
-| `BasicSPI` | Học đấu dây và `begin(CS)` | Chỉ in kết quả init một lần |
-| `ButtonEvents` | Phân biệt `button()`, `pressed()`, `released()` | Chỉ in edge event |
-| `JoystickDirections` | Xem hướng LEFT/RIGHT joystick sau lọc | Chỉ in khi hướng thay đổi |
-| `RawAnalogTest` | Xem raw + filtered + counters để tune | Rate-limit 10 Hz |
-| `ConnectionRecovery` | Test rút/cắm receiver, fail-safe và reconnect | Chỉ in khi link đổi |
-| `CustomSPI` | Chọn trực tiếp `SPI`, `SPI1`, `SPI2` | Không dùng |
-| `LegacyBitBang` | Giữ wiring GPIO cũ CLK/CMD/CS/DAT | Không dùng |
+```text
+ControllerTemplate
+      ↓
+copy sang project
+      ↓
+điền các USER FUNCTIONS
+      ↓
+chạy robot/cơ cấu thật
+
+Diagnostics      -> chỉ mở khi cần kiểm tra tay cầm
+ConnectionModes  -> chỉ mở khi wiring/bus khác mặc định
+```
+
+Các example cũ vẫn được giữ để tra cứu tại `extras/reference-examples/`, nhưng không còn làm rối menu Arduino IDE.
 
 ### Ví dụ điều khiển robot nằm ở thư viện đế
 
-`TungLam_PS2` chỉ chuẩn hóa input, không gắn cứng cách lái robot. Hai example điều khiển xe hoàn chỉnh được giữ ở repo **TungLam_OmniMecanum_4WD**:
+`TungLam_PS2` chỉ chuẩn hóa input, không gắn cứng hành vi robot. Template lái xe hoàn chỉnh nằm ở repo **TungLam_OmniMecanum_4WD**:
 
-- `PS2RobotControl`: khuyến nghị, joystick trái tiến/lùi/ngang; joystick phải LEFT/RIGHT có priority cao hơn để xoay.
-- `PS2RobotVectorMix`: nâng cao, joystick trái tạo vx/vy và joystick phải tạo wz để vừa tịnh tiến vừa quay.
+- `PS2RobotControl`: template khuyến nghị cho Mecanum/RoboBall; joystick phải quay có priority cao hơn joystick trái và đã có sẵn các hook `onCrossPressed()`, `onR1Held()`... để người dùng điền chức năng cơ cấu.
+- `RobotTemplate`: dùng khi nguồn input không nhất thiết là PS2.
+- `VelocityControlTemplate`: dùng cho ROS2/Serial/PC/auto mode với `vx, vy, wz`.
 
-Cách tách này giúp thư viện PS2 vẫn dùng được cho robot khác, cơ cấu máy, gamepad test, ESP32 hay project không dùng đế Mecanum.
+Các kiểu điều khiển nâng cao trước đây vẫn nằm trong `extras/reference-examples/` của thư viện đế.
 
 Hướng dẫn tiếng Việt đầy đủ: `docs/HUONG_DAN_SU_DUNG_VI.md`.
 
