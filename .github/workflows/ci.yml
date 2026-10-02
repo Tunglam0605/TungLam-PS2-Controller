@@ -27,7 +27,7 @@ jobs:
       - name: Arduino Lint
         uses: arduino/arduino-lint-action@v3
         with:
-          library-manager: update
+          library-manager: false
           compliance: strict
           project-type: library
 
