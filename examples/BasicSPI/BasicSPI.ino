@@ -6,7 +6,17 @@ void setup() {
   Serial.begin(115200);
 
   // Hardware SPI mặc định của board.
-  // MISO/MOSI/SCK do Arduino Core chọn, người dùng chỉ chọn CS.
+  //
+  // Arduino Mega 2560:
+  //   PS2 DAT/MISO -> D50
+  //   PS2 CMD/MOSI -> D51
+  //   PS2 CLK/SCK  -> D52
+  //   PS2 CS/ATT   -> D10 trong ví dụ này
+  //   PS2 GND      -> GND
+  //   PS2 VCC      -> nguồn đúng theo module receiver
+  //
+  // Với board khác, nối DAT/CMD/CLK vào MISO/MOSI/SCK
+  // của SPI mặc định của board.
   if (!ps2.begin(10)) {
     Serial.println("PS2 not found");
   }

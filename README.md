@@ -10,6 +10,65 @@ Thư viện đọc tay cầm PS2 dành cho Arduino/robotics, thiết kế theo h
 - Hardware SPI là đường dùng chính; BitBang giữ cho wiring cũ và pin tùy ý.
 - API/identifier dùng tiếng Anh chuẩn kỹ thuật; tài liệu mặc định tiếng Việt.
 
+## Sơ đồ đấu nối
+
+### Hardware SPI mặc định: `ps2.begin(CS_PIN)`
+
+Ví dụ Arduino Mega 2560:
+
+```text
+Đầu thu PS2            Arduino Mega 2560
+-----------------------------------------
+DAT / MISO      ->     D50 / MISO
+CMD / MOSI      ->     D51 / MOSI
+CLK / SCK       ->     D52 / SCK
+CS / ATT / SEL  ->     chân CS bạn chọn, ví dụ D53
+GND             ->     GND
+VCC             ->     nguồn đúng theo module receiver
+```
+
+Code:
+
+```cpp
+ps2.begin(53);
+```
+
+Với board khác, không dùng bảng chân của Mega. Hãy nhìn pinout của board và nối DAT/CMD/CLK vào MISO/MOSI/SCK của SPI mặc định.
+
+### Chọn SPI bus cụ thể: `ps2.begin(SPIx, CS_PIN)`
+
+```cpp
+ps2.begin(SPI1, 7);
+```
+
+Khi đó:
+
+```text
+DAT / MISO      -> MISO của SPI1
+CMD / MOSI      -> MOSI của SPI1
+CLK / SCK       -> SCK của SPI1
+CS / ATT / SEL  -> D7
+GND             -> GND
+VCC             -> nguồn đúng theo module receiver
+```
+
+### BitBang: tự chọn từng chân
+
+```cpp
+ps2.beginBitBang(22, 26, 24, 28);
+```
+
+Tương ứng:
+
+```text
+CLK -> D22
+CMD -> D26
+CS  -> D24
+DAT -> D28
+```
+
+> VCC không được mặc định hiểu là 5 V hay 3.3 V cho mọi receiver. Hãy cấp theo đúng module/adapter đang sử dụng và luôn nối chung GND.
+
 ## 3 cách khởi tạo
 
 ### 1. Đơn giản nhất: SPI mặc định của board

@@ -69,19 +69,61 @@ class TungLamPS2 {
   TungLamPS2();
 
   /**
-   * Khởi tạo bằng hardware SPI mặc định của board.
+   * @brief Khởi tạo PS2 bằng hardware SPI mặc định của board.
    *
-   * Người dùng chỉ chọn CS. MISO/MOSI/SCK do Arduino Core quản lý.
+   * Chỉ cần truyền chân CS/ATT. Ba chân còn lại dùng SPI mặc định
+   * do Arduino Core của board cung cấp.
+   *
+   * Sơ đồ tín hiệu:
+   *   PS2 DAT / MISO  -> MISO của board
+   *   PS2 CMD / MOSI  -> MOSI của board
+   *   PS2 CLK / SCK   -> SCK của board
+   *   PS2 CS / ATT    -> csPin
+   *   PS2 GND         -> GND chung
+   *   PS2 VCC         -> nguồn đúng theo module receiver
+   *
+   * Ví dụ Arduino Mega 2560:
+   *   DAT/MISO -> D50
+   *   CMD/MOSI -> D51
+   *   CLK/SCK  -> D52
+   *   CS/ATT   -> D53 nếu gọi begin(53)
+   *
+   * Lưu ý: thư viện không hard-code chân MISO/MOSI/SCK. Với board khác,
+   * xem pinout của board để xác định các chân SPI mặc định.
+   *
+   * @param csPin Chân GPIO nối với CS/ATT/SEL của đầu thu PS2.
+   * @return true nếu cấu hình và giao tiếp với controller thành công.
    */
   bool begin(uint8_t csPin) {
     return begin(SPI, csPin);
   }
 
   /**
-   * Khởi tạo bằng một SPI bus cụ thể, ví dụ SPI, SPI1 hoặc SPI2.
+   * @brief Khởi tạo PS2 bằng một SPI bus cụ thể.
+   *
+   * Dùng khi board có nhiều SPI bus, ví dụ SPI, SPI1 hoặc SPI2.
+   * MISO/MOSI/SCK phải đấu theo đúng pin mapping của bus được truyền vào.
+   *
+   * Sơ đồ tín hiệu:
+   *   PS2 DAT / MISO  -> MISO của bus
+   *   PS2 CMD / MOSI  -> MOSI của bus
+   *   PS2 CLK / SCK   -> SCK của bus
+   *   PS2 CS / ATT    -> csPin
+   *   PS2 GND         -> GND chung
+   *   PS2 VCC         -> nguồn đúng theo module receiver
+   *
+   * Ví dụ:
+   *   ps2.begin(SPI1, 7);
+   *
+   * Khi đó DAT/CMD/CLK phải nối vào MISO/MOSI/SCK của SPI1,
+   * còn CS/ATT nối vào D7.
    *
    * Template giúp API dùng được với nhiều Arduino Core có kiểu class SPI
    * khác nhau mà không hard-code theo từng kiến trúc.
+   *
+   * @param bus Đối tượng SPI bus muốn sử dụng.
+   * @param csPin Chân GPIO nối với CS/ATT/SEL của đầu thu PS2.
+   * @return true nếu cấu hình và giao tiếp với controller thành công.
    */
   template <typename TBus>
   bool begin(TBus& bus, uint8_t csPin) {
@@ -96,9 +138,32 @@ class TungLamPS2 {
   }
 
   /**
-   * Khởi tạo bằng 4 GPIO tùy ý.
+   * @brief Khởi tạo PS2 bằng 4 GPIO tùy ý theo kiểu BitBang.
    *
-   * Thứ tự: CLK, CMD/MOSI, CS/ATT, DAT/MISO.
+   * Dùng khi muốn tự chọn chân hoặc cần tương thích wiring cũ.
+   * Thứ tự tham số: CLK, CMD/MOSI, CS/ATT, DAT/MISO.
+   *
+   * Sơ đồ tín hiệu:
+   *   PS2 CLK / SCK   -> clockPin
+   *   PS2 CMD / MOSI  -> commandPin
+   *   PS2 CS / ATT    -> csPin
+   *   PS2 DAT / MISO  -> dataPin
+   *   PS2 GND         -> GND chung
+   *   PS2 VCC         -> nguồn đúng theo module receiver
+   *
+   * Ví dụ wiring RoboBall cũ:
+   *   ps2.beginBitBang(22, 26, 24, 28);
+   *
+   *   CLK -> D22
+   *   CMD -> D26
+   *   CS  -> D24
+   *   DAT -> D28
+   *
+   * @param clockPin Chân CLK/SCK.
+   * @param commandPin Chân CMD/MOSI.
+   * @param csPin Chân CS/ATT/SEL.
+   * @param dataPin Chân DAT/MISO.
+   * @return true nếu cấu hình và giao tiếp với controller thành công.
    */
   bool beginBitBang(uint8_t clockPin,
                     uint8_t commandPin,

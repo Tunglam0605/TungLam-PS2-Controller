@@ -6,10 +6,12 @@ void setup() {
   Serial.begin(115200);
 
   // Wiring RoboBall cũ:
-  // CLK = D22
-  // CMD = D26
-  // CS/SEL = D24
-  // DAT = D28
+  // PS2 CLK/SCK  -> D22
+  // PS2 CMD/MOSI -> D26
+  // PS2 CS/SEL   -> D24
+  // PS2 DAT/MISO -> D28
+  // PS2 GND      -> GND
+  // PS2 VCC      -> nguồn đúng theo module receiver
   ps2.beginBitBang(22, 26, 24, 28);
 }
 

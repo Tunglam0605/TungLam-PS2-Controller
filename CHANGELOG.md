@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 - 2026-10-02
+
+### Documentation
+- Added Doxygen wiring diagrams directly to all `begin()` overloads.
+- Added explicit PS2-to-SPI signal mapping for DAT/MISO, CMD/MOSI, CLK/SCK and CS/ATT.
+- Added Arduino Mega 2560 wiring example for `begin(53)`.
+- Added custom SPI bus wiring guidance for `begin(SPI1, csPin)`.
+- Added BitBang wiring example for legacy RoboBall pins.
+- Added README wiring section and power/GND caution.
+
 ## 0.2.0 - 2026-10-02
 
 ### Changed
