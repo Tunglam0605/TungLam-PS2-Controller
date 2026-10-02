@@ -148,15 +148,40 @@ ps2.errorCount();
 ps2.reconnectCount();
 ```
 
-## Timing
+## Poll rate và timing
 
-Mặc định ưu tiên tương thích:
+Mặc định thư viện poll tay cầm ở **50 Hz**:
+
+```text
+50 Hz = 1 frame mỗi 20 ms
+```
+
+Người dùng vẫn gọi `ps2.update()` liên tục; thư viện tự quyết định khi nào mới phát transaction PS2 nên không cần `delay()` trong `loop()`.
+
+Ba mức khuyến nghị:
+
+```cpp
+ps2.setPollRate(PS2PollRate::Hz20);   // 20 Hz = 50 ms
+ps2.setPollRate(PS2PollRate::Hz50);   // 50 Hz = 20 ms, mặc định
+ps2.setPollRate(PS2PollRate::Hz100);  // 100 Hz = 10 ms
+```
+
+Advanced:
+
+```cpp
+ps2.setPollRateHz(75);        // 1..200 Hz
+ps2.setPollIntervalUs(20000); // đặt trực tiếp interval
+```
+
+SPI timing là khái niệm riêng với poll rate:
 
 ```cpp
 ps2.setTimingProfile(PS2TimingProfile::Compatible);
+ps2.setClockHz(250000);
+ps2.setByteDelayUs(10);
 ```
 
-Các profile:
+Các profile SPI:
 
 ```cpp
 PS2TimingProfile::Compatible
@@ -164,15 +189,7 @@ PS2TimingProfile::Balanced
 PS2TimingProfile::Fast
 ```
 
-Advanced:
-
-```cpp
-ps2.setClockHz(250000);
-ps2.setByteDelayUs(10);
-ps2.setPollIntervalMs(10);
-```
-
-## Phạm vi v0.1.0
+## Phạm vi hiện tại
 
 Bản đầu tiên tập trung vào:
 

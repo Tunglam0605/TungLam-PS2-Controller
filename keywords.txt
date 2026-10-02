@@ -3,6 +3,7 @@ PS2Button	KEYWORD1
 PS2StickDirection	KEYWORD1
 PS2ConnectionStatus	KEYWORD1
 PS2TimingProfile	KEYWORD1
+PS2PollRate	KEYWORD1
 begin	KEYWORD2
 beginBitBang	KEYWORD2
 update	KEYWORD2
@@ -17,3 +18,6 @@ leftY	KEYWORD2
 rightX	KEYWORD2
 rightY	KEYWORD2
 calibrateCenter	KEYWORD2
+setPollRate	KEYWORD2
+setPollRateHz	KEYWORD2
+setPollIntervalUs	KEYWORD2

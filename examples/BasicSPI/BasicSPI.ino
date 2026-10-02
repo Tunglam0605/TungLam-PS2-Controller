@@ -10,6 +10,10 @@ void setup() {
   if (!ps2.begin(10)) {
     Serial.println("PS2 not found");
   }
+
+  // Mặc định đã là 50 Hz.
+  // Có thể chọn 20/50/100 Hz nếu muốn:
+  ps2.setPollRate(PS2PollRate::Hz50);
 }
 
 void loop() {

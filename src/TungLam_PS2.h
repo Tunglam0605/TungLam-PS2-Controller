@@ -46,6 +46,17 @@ enum class PS2TimingProfile : uint8_t {
 };
 
 /**
+ * Tần số poll tay cầm ở tầng application.
+ *
+ * Đây là khoảng cách giữa hai frame đọc tay cầm, không phải SPI clock.
+ */
+enum class PS2PollRate : uint8_t {
+  Hz20 = 20,
+  Hz50 = 50,
+  Hz100 = 100
+};
+
+/**
  * Driver tay cầm PS2 cho Arduino.
  *
  * Có 3 cách khởi tạo:
@@ -146,6 +157,30 @@ class TungLamPS2 {
   void setTimingProfile(PS2TimingProfile profile);
   void setClockHz(uint32_t clockHz);
   void setByteDelayUs(uint16_t byteDelayUs);
+
+  /**
+   * Chọn nhanh tần số poll 20/50/100 Hz.
+   *
+   * Mặc định là 50 Hz. update() vẫn có thể được gọi liên tục;
+   * thư viện chỉ phát transaction PS2 khi đến lịch.
+   */
+  void setPollRate(PS2PollRate rate);
+
+  /**
+   * Chọn tần số poll tùy ý trong khoảng 1..200 Hz.
+   *
+   * Trả về false nếu giá trị ngoài khoảng an toàn.
+   */
+  bool setPollRateHz(uint16_t rateHz);
+
+  /**
+   * API nâng cao: đặt trực tiếp khoảng poll theo microsecond.
+   */
+  void setPollIntervalUs(uint32_t pollIntervalUs);
+
+  /**
+   * Tương thích API cũ. Chuyển đổi ms sang microsecond nội bộ.
+   */
   void setPollIntervalMs(uint16_t pollIntervalMs);
 
  private:
@@ -215,7 +250,7 @@ class TungLamPS2 {
 
   uint32_t clockHz_;
   uint16_t byteDelayUs_;
-  uint16_t pollIntervalMs_;
+  uint32_t pollIntervalUs_;
   uint16_t recoveryIntervalMs_;
 
   uint8_t packet_[21];
@@ -235,6 +270,6 @@ class TungLamPS2 {
   uint32_t errorCount_;
   uint16_t reconnectCount_;
 
-  unsigned long lastPollMs_;
+  unsigned long lastPollUs_;
   unsigned long lastRecoveryMs_;
 };

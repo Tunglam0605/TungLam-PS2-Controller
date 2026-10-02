@@ -33,7 +33,7 @@ TungLamPS2::TungLamPS2()
       dataPin_(0),
       clockHz_(125000UL),
       byteDelayUs_(20),
-      pollIntervalMs_(10),
+      pollIntervalUs_(20000UL),
       recoveryIntervalMs_(250),
       mode_(0),
       buttons_(0),
@@ -44,7 +44,7 @@ TungLamPS2::TungLamPS2()
       packetCount_(0),
       errorCount_(0),
       reconnectCount_(0),
-      lastPollMs_(0),
+      lastPollUs_(0),
       lastRecoveryMs_(0) {
   for (uint8_t i = 0; i < sizeof(packet_); ++i) {
     packet_[i] = 0xFF;
@@ -154,11 +154,14 @@ bool TungLamPS2::configureController() {
 }
 
 bool TungLamPS2::update() {
-  const unsigned long now = millis();
+  const unsigned long nowUs = micros();
+  const unsigned long nowMs = millis();
 
   if (connected_) {
-    if (static_cast<unsigned long>(now - lastPollMs_) <
-        pollIntervalMs_) {
+    // Non-blocking scheduler:
+    // update() có thể được gọi liên tục, nhưng PS2 chỉ được poll đúng rate.
+    if (static_cast<unsigned long>(nowUs - lastPollUs_) <
+        pollIntervalUs_) {
       return true;
     }
 
@@ -178,16 +181,16 @@ bool TungLamPS2::update() {
     leftStick_.reset();
     rightStick_.reset();
 
-    lastRecoveryMs_ = now;
+    lastRecoveryMs_ = nowMs;
     return false;
   }
 
-  if (static_cast<unsigned long>(now - lastRecoveryMs_) <
+  if (static_cast<unsigned long>(nowMs - lastRecoveryMs_) <
       recoveryIntervalMs_) {
     return false;
   }
 
-  lastRecoveryMs_ = now;
+  lastRecoveryMs_ = nowMs;
   status_ = PS2ConnectionStatus::Recovering;
   ++reconnectCount_;
 
@@ -198,7 +201,7 @@ bool TungLamPS2::pollFrame(bool updatePublicState) {
   uint8_t rx[9] = {0};
 
   sendCommand(kPollCommand, rx, sizeof(kPollCommand));
-  lastPollMs_ = millis();
+  lastPollUs_ = micros();
 
   mode_ = rx[1];
 
@@ -481,7 +484,7 @@ bool TungLamPS2::calibrateCenter(uint8_t samples,
       static_cast<uint8_t>(rightXSum / accepted),
       static_cast<uint8_t>(rightYSum / accepted));
 
-  lastPollMs_ = millis();
+  lastPollUs_ = micros();
   return true;
 }
 
@@ -515,6 +518,28 @@ void TungLamPS2::setByteDelayUs(uint16_t byteDelayUs) {
   byteDelayUs_ = byteDelayUs;
 }
 
+void TungLamPS2::setPollRate(PS2PollRate rate) {
+  setPollRateHz(static_cast<uint16_t>(rate));
+}
+
+bool TungLamPS2::setPollRateHz(uint16_t rateHz) {
+  if (rateHz < 1 || rateHz > 200) {
+    return false;
+  }
+
+  pollIntervalUs_ = 1000000UL / rateHz;
+  return true;
+}
+
+void TungLamPS2::setPollIntervalUs(uint32_t pollIntervalUs) {
+  if (pollIntervalUs > 0) {
+    pollIntervalUs_ = pollIntervalUs;
+  }
+}
+
 void TungLamPS2::setPollIntervalMs(uint16_t pollIntervalMs) {
-  pollIntervalMs_ = pollIntervalMs;
+  if (pollIntervalMs > 0) {
+    pollIntervalUs_ =
+        static_cast<uint32_t>(pollIntervalMs) * 1000UL;
+  }
 }
