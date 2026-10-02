@@ -21,3 +21,6 @@ calibrateCenter	KEYWORD2
 setPollRate	KEYWORD2
 setPollRateHz	KEYWORD2
 setPollIntervalUs	KEYWORD2
+debug	KEYWORD2
+printState	KEYWORD2
+resetDebug	KEYWORD2

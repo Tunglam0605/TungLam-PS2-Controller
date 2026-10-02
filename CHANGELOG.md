@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.3.0 - 2026-10-02
+
+### Added
+- Opt-in event-based `debug(Stream&)` API.
+- One-shot `printState(Stream&)` snapshot API.
+- `resetDebug()` for debug baseline reset.
+- New examples: `BasicRead`, `ButtonEvents`, `DebugMonitor`, `RawAnalogTest`.
+
+### Changed
+- Core `update()` path never prints to Serial.
+- Debug output is emitted only when the user explicitly calls `debug()` or `printState()`.
+- `debug()` is event-driven and only prints state/button/direction/error/reconnect changes.
+
+### Fixed
+- `pressed()` / `released()` are now one-application-iteration edge events, so a fast loop cannot process the same button edge repeatedly between 50 Hz controller frames.
+
 ## 0.2.2 - 2026-10-02
 
 ### Documentation

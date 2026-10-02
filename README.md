@@ -223,6 +223,107 @@ ps2.errorCount();
 ps2.reconnectCount();
 ```
 
+## Debug và test không spam Serial
+
+Core driver không tự in bất kỳ thứ gì ra `Serial`. Chỉ `ps2.update()` là đủ cho production.
+
+### Production
+
+```cpp
+void loop() {
+  ps2.update();
+
+  if (!ps2.connected()) {
+    return;
+  }
+
+  // robot control...
+}
+```
+
+Không cần `Serial.begin()`, không cần `delay()`.
+
+### Debug theo sự kiện
+
+Khi cần debug:
+
+```cpp
+void setup() {
+  Serial.begin(115200);
+  ps2.begin(53);
+}
+
+void loop() {
+  ps2.update();
+  ps2.debug(Serial);
+}
+```
+
+`debug()` chỉ in khi có thay đổi đáng chú ý:
+
+- trạng thái kết nối đổi;
+- button PRESSED/RELEASED;
+- joystick đổi hướng;
+- error counter đổi;
+- reconnect counter đổi.
+
+Nếu tay cầm đứng yên, Serial cũng đứng yên.
+
+Có thể bật/tắt ở compile time:
+
+```cpp
+#define PS2_DEBUG_ENABLED 1
+
+void setup() {
+#if PS2_DEBUG_ENABLED
+  Serial.begin(115200);
+#endif
+
+  ps2.begin(53);
+}
+
+void loop() {
+  ps2.update();
+
+#if PS2_DEBUG_ENABLED
+  ps2.debug(Serial);
+#endif
+}
+```
+
+Đổi `PS2_DEBUG_ENABLED` thành `0` khi build production.
+
+### Snapshot / raw analog test
+
+```cpp
+ps2.printState(Serial);
+```
+
+Mỗi lần gọi sẽ in một snapshot đầy đủ, vì vậy khi test raw analog nên rate-limit:
+
+```cpp
+static unsigned long lastPrint = 0;
+
+if (millis() - lastPrint >= 100) {
+  lastPrint = millis();
+  ps2.printState(Serial);  // 10 dòng/giây
+}
+```
+
+### Examples
+
+- `BasicRead` — cách dùng production, không Serial.
+- `ButtonEvents` — test held / pressed / released.
+- `DebugMonitor` — debug theo sự kiện, không spam.
+- `RawAnalogTest` — xem raw/filtered joystick có rate-limit.
+- `BasicSPI` — khởi tạo hardware SPI mặc định.
+- `CustomSPI` — truyền SPI bus cụ thể.
+- `LegacyBitBang` — tự chọn CLK/CMD/CS/DAT.
+
+### Semantics của button edge
+
+`pressed()` và `released()` là event theo frame mới. Chúng chỉ có hiệu lực trong vòng application loop ngay sau `update()` nhận được frame PS2 mới, nên loop chạy nhanh hơn 50 Hz cũng không làm một lần nhấn bị xử lý lặp lại.
+
 ## Poll rate và timing
 
 Mặc định thư viện poll tay cầm ở **50 Hz**:

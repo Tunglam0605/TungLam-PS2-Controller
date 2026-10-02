@@ -207,6 +207,44 @@ class TungLamPS2 {
   bool released(PS2Button key) const;
   uint16_t buttons() const;
 
+  /**
+   * @brief In debug theo sự kiện, không spam Serial.
+   *
+   * Hàm này KHÔNG được gọi tự động bởi update(). Chỉ gọi trong loop()
+   * khi đang debug:
+   *
+   *   ps2.update();
+   *   ps2.debug(Serial);
+   *
+   * Chỉ in khi có thay đổi đáng chú ý:
+   * - trạng thái kết nối thay đổi;
+   * - nút vừa nhấn / vừa nhả;
+   * - joystick đổi hướng;
+   * - error/reconnect counter thay đổi.
+   *
+   * Nếu không gọi debug(), core driver không tạo Serial output.
+   *
+   * @param output Stream nhận log, ví dụ Serial, Serial1...
+   */
+  void debug(Stream& output);
+
+  /**
+   * @brief In một snapshot đầy đủ của trạng thái controller.
+   *
+   * Đây là hàm one-shot: mỗi lần gọi sẽ in một dòng. Dùng cho test
+   * hoặc raw analog inspection; không nên gọi không giới hạn trong loop().
+   *
+   * @param output Stream nhận log, ví dụ Serial.
+   */
+  void printState(Stream& output) const;
+
+  /**
+   * @brief Reset baseline của debug event monitor.
+   *
+   * Lần debug() tiếp theo sẽ in lại snapshot ban đầu.
+   */
+  void resetDebug();
+
   // Joystick đã lọc và phân vùng.
   PS2StickDirection leftDirection() const;
   PS2StickDirection rightDirection() const;
@@ -342,6 +380,8 @@ class TungLamPS2 {
 
   uint16_t buttons_;
   uint16_t previousButtons_;
+  uint16_t pressedButtons_;
+  uint16_t releasedButtons_;
   bool buttonHistoryValid_;
 
   TungLamPS2StickFilter leftStick_;
@@ -353,6 +393,13 @@ class TungLamPS2 {
   uint32_t packetCount_;
   uint32_t errorCount_;
   uint16_t reconnectCount_;
+
+  bool debugInitialized_;
+  PS2ConnectionStatus debugLastStatus_;
+  PS2StickDirection debugLastLeftDirection_;
+  PS2StickDirection debugLastRightDirection_;
+  uint32_t debugLastErrorCount_;
+  uint16_t debugLastReconnectCount_;
 
   unsigned long lastPollUs_;
   unsigned long lastRecoveryMs_;
