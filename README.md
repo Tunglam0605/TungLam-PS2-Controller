@@ -129,13 +129,15 @@ ps2.setStickCenters(128, 127, 129, 128);
 
 ## Reconnect
 
-`update()` tự theo dõi frame lỗi. Sau nhiều frame lỗi liên tiếp, state chuyển sang Recovering và thư viện tự thử cấu hình lại controller.
+`update()` kiểm tra từng frame. Ngay ở frame lỗi đầu tiên, thư viện neutralize button/joystick state để không giữ lệnh cũ, sau đó chuyển sang Recovering và tự thử cấu hình lại controller.
 
 ```cpp
 if (!ps2.connected()) {
     // dừng cơ cấu điều khiển nếu cần
 }
 ```
+
+Frame đầu tiên sau `begin()` hoặc reconnect chỉ dùng để đồng bộ button state, vì vậy không phát sinh `pressed()`/`released()` giả nếu người dùng đang giữ nút trong lúc kết nối trở lại.
 
 Diagnostics:
 

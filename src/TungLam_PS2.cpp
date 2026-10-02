@@ -34,16 +34,16 @@ TungLamPS2::TungLamPS2()
       clockHz_(125000UL),
       byteDelayUs_(20),
       pollIntervalMs_(10),
-      recoveryIntervalMs_(500),
+      recoveryIntervalMs_(250),
       mode_(0),
       buttons_(0),
       previousButtons_(0),
+      buttonHistoryValid_(false),
       connected_(false),
       status_(PS2ConnectionStatus::Disconnected),
       packetCount_(0),
       errorCount_(0),
       reconnectCount_(0),
-      consecutiveErrors_(0),
       lastPollMs_(0),
       lastRecoveryMs_(0) {
   for (uint8_t i = 0; i < sizeof(packet_); ++i) {
@@ -73,9 +73,9 @@ bool TungLamPS2::beginBitBang(uint8_t clockPin,
 bool TungLamPS2::beginCommon() {
   connected_ = false;
   status_ = PS2ConnectionStatus::Probing;
-  consecutiveErrors_ = 0;
   buttons_ = 0;
   previousButtons_ = 0;
+  buttonHistoryValid_ = false;
 
   leftStick_.reset();
   rightStick_.reset();
@@ -138,7 +138,6 @@ bool TungLamPS2::configureController() {
 
     if (pollFrame(true) && isAnalogMode(mode_)) {
       connected_ = true;
-      consecutiveErrors_ = 0;
       updateConnectionStatus(mode_);
       return true;
     }
@@ -163,24 +162,17 @@ bool TungLamPS2::update() {
       return true;
     }
 
-    if (pollFrame(true)) {
-      consecutiveErrors_ = 0;
+    if (pollFrame(true) && isAnalogMode(mode_)) {
       return true;
     }
 
+    // Fail-safe ngay từ frame lỗi đầu tiên:
+    // không giữ button/joystick command cũ trong lúc link có vấn đề.
     ++errorCount_;
-
-    if (consecutiveErrors_ < 255) {
-      ++consecutiveErrors_;
-    }
-
-    if (consecutiveErrors_ < 3) {
-      return true;
-    }
-
     connected_ = false;
     buttons_ = 0;
     previousButtons_ = 0;
+    buttonHistoryValid_ = false;
     status_ = PS2ConnectionStatus::Recovering;
 
     leftStick_.reset();
@@ -222,13 +214,23 @@ bool TungLamPS2::pollFrame(bool updatePublicState) {
     packet_[i] = rx[i];
   }
 
-  previousButtons_ = buttons_;
-
   const uint16_t activeLow =
       static_cast<uint16_t>(rx[3]) |
       (static_cast<uint16_t>(rx[4]) << 8U);
 
-  buttons_ = static_cast<uint16_t>(~activeLow);
+  const uint16_t newButtons =
+      static_cast<uint16_t>(~activeLow);
+
+  if (!buttonHistoryValid_) {
+    // Frame đầu sau begin/reconnect chỉ đồng bộ trạng thái.
+    // Không tạo pressed()/released() giả.
+    buttons_ = newButtons;
+    previousButtons_ = newButtons;
+    buttonHistoryValid_ = true;
+  } else {
+    previousButtons_ = buttons_;
+    buttons_ = newButtons;
+  }
 
   rightStick_.push(rx[5], rx[6]);
   leftStick_.push(rx[7], rx[8]);

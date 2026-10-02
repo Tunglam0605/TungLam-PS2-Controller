@@ -223,6 +223,7 @@ class TungLamPS2 {
 
   uint16_t buttons_;
   uint16_t previousButtons_;
+  bool buttonHistoryValid_;
 
   TungLamPS2StickFilter leftStick_;
   TungLamPS2StickFilter rightStick_;
@@ -233,8 +234,6 @@ class TungLamPS2 {
   uint32_t packetCount_;
   uint32_t errorCount_;
   uint16_t reconnectCount_;
-
-  uint8_t consecutiveErrors_;
 
   unsigned long lastPollMs_;
   unsigned long lastRecoveryMs_;
