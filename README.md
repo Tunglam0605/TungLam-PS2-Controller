@@ -1,0 +1,194 @@
+# TungLam PS2 Controller
+
+Thư viện đọc tay cầm PS2 dành cho Arduino/robotics, thiết kế theo hướng **đa board, linh hoạt, an toàn và dễ dùng**.
+
+## Mục tiêu
+
+- Không bắt người dùng tự đọc `LX/LY/RX/RY`, trừ tâm rồi viết lại hàng loạt `if`.
+- Không map joystick trực tiếp thành tốc độ robot.
+- Nút bấm để mở hoàn toàn cho từng project tự mapping chức năng.
+- Hardware SPI là đường dùng chính; BitBang giữ cho wiring cũ và pin tùy ý.
+- API/identifier dùng tiếng Anh chuẩn kỹ thuật; tài liệu mặc định tiếng Việt.
+
+## 3 cách khởi tạo
+
+### 1. Đơn giản nhất: SPI mặc định của board
+
+```cpp
+TungLamPS2 ps2;
+
+void setup() {
+  ps2.begin(10);  // chỉ cần CS
+}
+```
+
+MISO/MOSI/SCK do Arduino Core của board quản lý. Thư viện không hard-code bảng chân SPI cho từng board.
+
+### 2. Chọn SPI bus cụ thể
+
+```cpp
+ps2.begin(SPI1, 7);
+```
+
+Dùng khi board/core có nhiều bus như `SPI1`, `SPI2`. API dùng template nên không phụ thuộc tên concrete class của SPI trên AVR, SAMD, Mbed, Renesas...
+
+### 3. Chọn từng chân như cách cũ
+
+```cpp
+ps2.beginBitBang(
+    22,  // CLK
+    26,  // CMD / MOSI
+    24,  // CS / ATT
+    28   // DAT / MISO
+);
+```
+
+## Nút bấm: đúng 3 kiểu cơ bản
+
+```cpp
+ps2.button(PS2Button::Cross);    // đang giữ
+ps2.pressed(PS2Button::Cross);   // vừa nhấn
+ps2.released(PS2Button::Cross);  // vừa nhả
+```
+
+Thư viện không cố định Cross, R1, L2... phải làm chức năng gì.
+
+## Joystick: gọi kết quả cuối
+
+```cpp
+PS2StickDirection left = ps2.leftDirection();
+PS2StickDirection right = ps2.rightDirection();
+```
+
+Các state:
+
+```text
+Center
+Up
+Down
+Left
+Right
+Unknown
+```
+
+Ví dụ:
+
+```cpp
+if (ps2.leftDirection() == PS2StickDirection::Up) {
+    robot.forward(180);  // tốc độ do người lập trình quyết định
+}
+```
+
+Nếu cần giá trị analog:
+
+```cpp
+ps2.leftRawX();   // raw frame 0..255
+ps2.leftRawY();
+
+ps2.leftX();      // đã median-filter + trừ tâm
+ps2.leftY();
+```
+
+## Pipeline lọc joystick
+
+```text
+raw 0..255
+   ↓
+median-of-3
+   ↓
+center compensation
+   ↓
+deadzone
+   ↓
+hysteresis
+   ↓
+stable-sample confirmation
+   ↓
+Up / Down / Left / Right / Center / Unknown
+```
+
+Hai nguyên tắc fail-safe:
+
+1. Vùng chéo/mơ hồ → `Unknown`, không giữ hướng cũ.
+2. Khi xác nhận một hướng mới → tạm `Unknown`, không tiếp tục hướng trước.
+
+## Hiệu chỉnh tâm
+
+Mặc định tâm là 128/128. Với tay clone bị lệch tâm:
+
+```cpp
+// Thả cả hai joystick rồi gọi:
+ps2.calibrateCenter();
+```
+
+Hoặc set thủ công:
+
+```cpp
+ps2.setStickCenters(128, 127, 129, 128);
+```
+
+## Reconnect
+
+`update()` tự theo dõi frame lỗi. Sau nhiều frame lỗi liên tiếp, state chuyển sang Recovering và thư viện tự thử cấu hình lại controller.
+
+```cpp
+if (!ps2.connected()) {
+    // dừng cơ cấu điều khiển nếu cần
+}
+```
+
+Diagnostics:
+
+```cpp
+ps2.status();
+ps2.packetCount();
+ps2.errorCount();
+ps2.reconnectCount();
+```
+
+## Timing
+
+Mặc định ưu tiên tương thích:
+
+```cpp
+ps2.setTimingProfile(PS2TimingProfile::Compatible);
+```
+
+Các profile:
+
+```cpp
+PS2TimingProfile::Compatible
+PS2TimingProfile::Balanced
+PS2TimingProfile::Fast
+```
+
+Advanced:
+
+```cpp
+ps2.setClockHz(250000);
+ps2.setByteDelayUs(10);
+ps2.setPollIntervalMs(10);
+```
+
+## Phạm vi v0.1.0
+
+Bản đầu tiên tập trung vào:
+
+- đọc controller ở digital/analog mode;
+- đưa controller về analog mode;
+- button hold/pressed/released;
+- joystick filtering + discrete directions;
+- reconnect;
+- default SPI / custom SPI bus / BitBang.
+
+Pressure buttons và rumble sẽ được thêm sau khi baseline này được test trên phần cứng thật.
+
+## Tham khảo kỹ thuật
+
+Thiết kế được nghiên cứu từ protocol PlayStation/PS2 và hành vi của nhiều implementation công khai như PS2X, PsxNewLib và các AVR PS2 controller drivers. Source của thư viện này được viết độc lập, không copy implementation từ các thư viện tham khảo.
+
+Xem thêm `extras/REFERENCES.md`.
+
+## License
+
+MIT.

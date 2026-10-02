@@ -1,0 +1,80 @@
+name: Arduino CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  filter-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Build filter unit test
+        run: |
+          g++ -std=c++11 -Wall -Wextra -pedantic             tests/filter_test.cpp src/TungLam_PS2_Filter.cpp             -o filter_test
+
+      - name: Run filter unit test
+        run: ./filter_test
+
+  arduino-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Arduino Lint
+        uses: arduino/arduino-lint-action@v3
+        with:
+          library-manager: update
+          compliance: strict
+          project-type: library
+
+  compile:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Arduino Mega 2560
+            core: arduino:avr
+            fqbn: arduino:avr:mega
+
+          - name: MKR WiFi 1010
+            core: arduino:samd
+            fqbn: arduino:samd:mkrwifi1010
+
+          - name: UNO R4 WiFi
+            core: arduino:renesas_uno
+            fqbn: arduino:renesas_uno:unor4wifi
+
+          - name: Nano 33 BLE
+            core: arduino:mbed_nano
+            fqbn: arduino:mbed_nano:nano33ble
+
+    name: Compile - ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install board core
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install "${{ matrix.core }}"
+
+      - name: Compile every example
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for sketch in examples/*; do
+            if [ -d "$sketch" ]; then
+              echo "=== ${{ matrix.name }} :: $sketch ==="
+              arduino-cli compile                 --fqbn "${{ matrix.fqbn }}"                 --library .                 "$sketch"
+            fi
+          done
