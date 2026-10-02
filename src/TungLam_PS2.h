@@ -88,6 +88,25 @@ class TungLamPS2 {
    *   CLK/SCK  -> D52
    *   CS/ATT   -> D53 nếu gọi begin(53)
    *
+   * Bảng đấu nối nhanh với SPI mặc định:
+   *
+   * @verbatim
+   * Board / dòng Arduino     DAT / MISO(CIPO)   CMD / MOSI(COPI)   CLK / SCK   CS gợi ý
+   * --------------------------------------------------------------------------------------
+   * Mega 2560 Rev3          D50                D51                D52         D53
+   * UNO R3                  D12                D11                D13         D10
+   * Nano classic            D12                D11                D13         D10
+   * UNO R4 Minima / WiFi    D12                D11                D13         D10
+   * Nano 33 IoT             D12                D11                D13         D10
+   * Nano 33 BLE             D12                D11                D13         D10
+   * MKR WiFi 1010           D10                D8                 D9          D7
+   * Micro                    D14                D16                D15         D17
+   * Leonardo                 ICSP CIPO          ICSP COPI          ICSP SCK    D10
+   * @endverbatim
+   *
+   * CS gợi ý chỉ là lựa chọn thuận tiện. Có thể dùng GPIO digital khác
+   * nếu không xung đột với phần cứng/project.
+   *
    * Lưu ý: thư viện không hard-code chân MISO/MOSI/SCK. Với board khác,
    * xem pinout của board để xác định các chân SPI mặc định.
    *

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.2 - 2026-10-02
+
+### Documentation
+- Added board-by-board SPI wiring lookup table directly in the `begin(CS_PIN)` Doxygen comment.
+- Added wiring rows for Mega 2560, UNO R3, Nano classic, UNO R4, Nano 33 IoT, Nano 33 BLE, MKR WiFi 1010, Micro and Leonardo.
+- Added the same quick-reference table to README.
+- Clarified that CS is selectable GPIO; the table shows recommended/convenient CS pins only.
+
 ## 0.2.1 - 2026-10-02
 
 ### Documentation

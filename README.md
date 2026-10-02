@@ -14,6 +14,22 @@ Thư viện đọc tay cầm PS2 dành cho Arduino/robotics, thiết kế theo h
 
 ### Hardware SPI mặc định: `ps2.begin(CS_PIN)`
 
+### Bảng tra nhanh SPI mặc định
+
+| Board | PS2 DAT / MISO(CIPO) | PS2 CMD / MOSI(COPI) | PS2 CLK / SCK | CS gợi ý |
+|---|---:|---:|---:|---:|
+| Arduino Mega 2560 Rev3 | D50 | D51 | D52 | D53 |
+| Arduino UNO R3 | D12 | D11 | D13 | D10 |
+| Arduino Nano classic | D12 | D11 | D13 | D10 |
+| Arduino UNO R4 Minima / WiFi | D12 | D11 | D13 | D10 |
+| Arduino Nano 33 IoT | D12 | D11 | D13 | D10 |
+| Arduino Nano 33 BLE | D12 | D11 | D13 | D10 |
+| Arduino MKR WiFi 1010 | D10 | D8 | D9 | D7 |
+| Arduino Micro | D14 | D16 | D15 | D17 |
+| Arduino Leonardo | ICSP CIPO | ICSP COPI | ICSP SCK | D10 |
+
+> **CS gợi ý không phải bắt buộc.** Với `ps2.begin(CS_PIN)`, ba dây DAT/CMD/CLK phải đi vào SPI mặc định của board; riêng CS/ATT có thể chọn GPIO digital khác nếu không xung đột.
+
 Ví dụ Arduino Mega 2560:
 
 ```text
