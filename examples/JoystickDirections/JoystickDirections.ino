@@ -4,6 +4,10 @@
  *
  * Chỉ in khi hướng LEFT hoặc RIGHT joystick thực sự thay đổi.
  * Không có delay() và không map analog trực tiếp thành tốc độ robot.
+ *
+ * Lưu ý: thư viện chỉ trả về trạng thái joystick. Việc UP nghĩa là tiến,
+ * RIGHT nghĩa là xoay hay điều khiển một cơ cấu nào khác hoàn toàn do project
+ * quyết định. Ví dụ lái đế robot nằm ở repo TungLam_OmniMecanum_4WD.
  */
 
 #include <TungLam_PS2.h>

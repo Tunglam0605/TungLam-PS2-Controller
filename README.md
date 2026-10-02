@@ -347,17 +347,33 @@ if (millis() - lastPrint >= 100) {
 
 ### Examples
 
+Nếu mới dùng thư viện, chỉ cần bắt đầu với **2 example**:
+
+| Example | Khi nào dùng |
+|---|---|
+| `BasicRead` | Học API production tối thiểu: `update()`, `connected()`, button, joystick; không Serial, không delay |
+| `DebugMonitor` | Khi cần kiểm tra tay cầm thật trên Serial; chỉ in khi state thay đổi |
+
+Sau đó mới dùng các example chuyên biệt:
+
 | Example | Mục đích | Serial |
 |---|---|---|
-| `BasicRead` | Khung production tối thiểu: update, connected, button, joystick | Không dùng |
-| `BasicSPI` | Học cách đấu dây và gọi `begin(CS)` | Chỉ in kết quả init một lần |
+| `BasicSPI` | Học đấu dây và `begin(CS)` | Chỉ in kết quả init một lần |
 | `ButtonEvents` | Phân biệt `button()`, `pressed()`, `released()` | Chỉ in edge event |
 | `JoystickDirections` | Xem hướng LEFT/RIGHT joystick sau lọc | Chỉ in khi hướng thay đổi |
-| `DebugMonitor` | Debug toàn tay cầm theo event | Một dòng/snapshot thay đổi |
 | `RawAnalogTest` | Xem raw + filtered + counters để tune | Rate-limit 10 Hz |
 | `ConnectionRecovery` | Test rút/cắm receiver, fail-safe và reconnect | Chỉ in khi link đổi |
 | `CustomSPI` | Chọn trực tiếp `SPI`, `SPI1`, `SPI2` | Không dùng |
 | `LegacyBitBang` | Giữ wiring GPIO cũ CLK/CMD/CS/DAT | Không dùng |
+
+### Ví dụ điều khiển robot nằm ở thư viện đế
+
+`TungLam_PS2` chỉ chuẩn hóa input, không gắn cứng cách lái robot. Hai example điều khiển xe hoàn chỉnh được giữ ở repo **TungLam_OmniMecanum_4WD**:
+
+- `PS2RobotControl`: khuyến nghị, joystick trái tiến/lùi/ngang; joystick phải LEFT/RIGHT có priority cao hơn để xoay.
+- `PS2RobotVectorMix`: nâng cao, joystick trái tạo vx/vy và joystick phải tạo wz để vừa tịnh tiến vừa quay.
+
+Cách tách này giúp thư viện PS2 vẫn dùng được cho robot khác, cơ cấu máy, gamepad test, ESP32 hay project không dùng đế Mecanum.
 
 Hướng dẫn tiếng Việt đầy đủ: `docs/HUONG_DAN_SU_DUNG_VI.md`.
 

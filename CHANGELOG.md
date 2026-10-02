@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.1 - 2026-10-02
+
+### Documentation and examples
+- Reorganized examples into a clearer learning path: start with `BasicRead` and `DebugMonitor`, then move to focused button/joystick/raw/recovery/transport examples.
+- Clarified that TungLam_PS2 is an input library and does not hard-code robot driving behavior.
+- Documented the two robot-driving examples that live in TungLam_OmniMecanum_4WD:
+  - `PS2RobotControl`: RoboBall/V5-style right-stick rotation priority.
+  - `PS2RobotVectorMix`: simultaneous translation + rotation through vx/vy/wz.
+- Added historical RoboBall joystick-control notes to the Vietnamese usage guide.
+- Clarified in `JoystickDirections` that application behavior is intentionally project-defined.
+
 ## 0.4.0 - 2026-10-02
 
 ### Documentation

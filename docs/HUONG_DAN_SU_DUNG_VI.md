@@ -136,3 +136,40 @@ if (!ps2.connected()) {
 ```
 
 Khi frame lỗi/mất link, thư viện neutralize input và tự recovery.
+
+
+## 9. Tổ chức examples
+
+Nên học theo thứ tự:
+
+```text
+BasicRead
+   ↓
+DebugMonitor
+   ↓
+ButtonEvents / JoystickDirections
+   ↓
+RawAnalogTest / ConnectionRecovery
+   ↓
+CustomSPI hoặc LegacyBitBang nếu phần cứng cần
+```
+
+Thư viện PS2 **không gắn cứng hành vi robot**. Ví dụ lái xe nằm ở `TungLam_OmniMecanum_4WD`:
+
+- `PS2RobotControl`: phong cách RoboBall/V5, joystick phải xoay và ưu tiên cao hơn joystick trái.
+- `PS2RobotVectorMix`: tịnh tiến và quay đồng thời bằng vx/vy/wz.
+
+## 10. Phong cách điều khiển đã dùng trong các project RoboBall cũ
+
+Pattern thường gặp:
+
+```text
+joystick trái:
+  UP/DOWN    -> tiến/lùi
+  LEFT/RIGHT -> ngang trái/phải
+
+joystick phải:
+  LEFT/RIGHT -> quay trái/phải
+```
+
+Trong nhiều project Mecanum cũ, code xử lý joystick phải sau joystick trái. Lệnh quay vì vậy ghi đè lệnh tịnh tiến nếu cả hai cùng tác động. Example `PS2RobotControl` mới biểu diễn priority đó rõ ràng bằng cấu trúc điều khiển, không phụ thuộc thứ tự các câu `if`.
