@@ -261,11 +261,21 @@ void loop() {
 
 `debug()` chỉ in khi có thay đổi đáng chú ý:
 
-- trạng thái kết nối đổi;
-- button PRESSED/RELEASED;
-- joystick đổi hướng;
-- error counter đổi;
-- reconnect counter đổi.
+Mỗi lần có thay đổi, `debug()` chỉ phát **một dòng tổng hợp**:
+
+```text
+[PS2] LINK=CONNECTED_ANALOG | BTN=CROSS:PRESSED | LEFT=UP(1,-117) | RIGHT=CENTER(0,2) | ERR=0 | REC=0
+```
+
+Ví dụ các lần thay đổi tiếp theo:
+
+```text
+[PS2] BTN=CROSS:RELEASED,R1:PRESSED
+[PS2] LEFT=CENTER(0,1)
+[PS2] LINK=RECOVERING | ERR=1
+```
+
+Nếu không có event hoặc thay đổi trạng thái, `debug()` không in thêm dữ liệu. Serial Monitor có thể tự wrap nếu cửa sổ hẹp, nhưng thư viện chỉ tạo **một newline cho mỗi snapshot thay đổi**.
 
 Nếu tay cầm đứng yên, Serial cũng đứng yên.
 

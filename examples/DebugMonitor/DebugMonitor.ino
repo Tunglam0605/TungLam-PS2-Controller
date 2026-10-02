@@ -18,9 +18,11 @@ void loop() {
   ps2.update();
 
 #if PS2_DEBUG_ENABLED
-  // Không spam Serial:
-  // chỉ in khi status, button, joystick direction,
-  // error hoặc reconnect thay đổi.
+  // Không spam Serial, mỗi thay đổi chỉ in MỘT dòng:
+  // [PS2] BTN=CROSS:PRESSED | LEFT=UP(1,-117)
+  // [PS2] BTN=CROSS:RELEASED | LEFT=CENTER(0,2)
+  //
+  // Không có thay đổi -> không in dòng mới.
   ps2.debug(Serial);
 #endif
 

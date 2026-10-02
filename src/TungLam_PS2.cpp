@@ -22,32 +22,32 @@ void printConnectionStatus(Stream& output,
                            PS2ConnectionStatus status) {
   switch (status) {
     case PS2ConnectionStatus::Probing:
-      output.print(F("Probing"));
+      output.print(F("PROBING"));
       break;
     case PS2ConnectionStatus::Configuring:
-      output.print(F("Configuring"));
+      output.print(F("CONFIGURING"));
       break;
     case PS2ConnectionStatus::ConnectedDigital:
-      output.print(F("ConnectedDigital"));
+      output.print(F("CONNECTED_DIGITAL"));
       break;
     case PS2ConnectionStatus::ConnectedAnalog:
-      output.print(F("ConnectedAnalog"));
+      output.print(F("CONNECTED_ANALOG"));
       break;
     case PS2ConnectionStatus::ConnectedPressure:
-      output.print(F("ConnectedPressure"));
+      output.print(F("CONNECTED_PRESSURE"));
       break;
     case PS2ConnectionStatus::Recovering:
-      output.print(F("Recovering"));
+      output.print(F("RECOVERING"));
       break;
     case PS2ConnectionStatus::NoResponse:
-      output.print(F("NoResponse"));
+      output.print(F("NO_RESPONSE"));
       break;
     case PS2ConnectionStatus::ConfigRejected:
-      output.print(F("ConfigRejected"));
+      output.print(F("CONFIG_REJECTED"));
       break;
     case PS2ConnectionStatus::Disconnected:
     default:
-      output.print(F("Disconnected"));
+      output.print(F("DISCONNECTED"));
       break;
   }
 }
@@ -56,45 +56,45 @@ void printStickDirection(Stream& output,
                          PS2StickDirection direction) {
   switch (direction) {
     case PS2StickDirection::Center:
-      output.print(F("Center"));
+      output.print(F("CENTER"));
       break;
     case PS2StickDirection::Up:
-      output.print(F("Up"));
+      output.print(F("UP"));
       break;
     case PS2StickDirection::Down:
-      output.print(F("Down"));
+      output.print(F("DOWN"));
       break;
     case PS2StickDirection::Left:
-      output.print(F("Left"));
+      output.print(F("LEFT"));
       break;
     case PS2StickDirection::Right:
-      output.print(F("Right"));
+      output.print(F("RIGHT"));
       break;
     case PS2StickDirection::Unknown:
     default:
-      output.print(F("Unknown"));
+      output.print(F("UNKNOWN"));
       break;
   }
 }
 
 void printButtonName(Stream& output, PS2Button button) {
   switch (button) {
-    case PS2Button::Select: output.print(F("Select")); break;
+    case PS2Button::Select: output.print(F("SELECT")); break;
     case PS2Button::L3: output.print(F("L3")); break;
     case PS2Button::R3: output.print(F("R3")); break;
-    case PS2Button::Start: output.print(F("Start")); break;
-    case PS2Button::Up: output.print(F("Up")); break;
-    case PS2Button::Right: output.print(F("Right")); break;
-    case PS2Button::Down: output.print(F("Down")); break;
-    case PS2Button::Left: output.print(F("Left")); break;
+    case PS2Button::Start: output.print(F("START")); break;
+    case PS2Button::Up: output.print(F("DPAD_UP")); break;
+    case PS2Button::Right: output.print(F("DPAD_RIGHT")); break;
+    case PS2Button::Down: output.print(F("DPAD_DOWN")); break;
+    case PS2Button::Left: output.print(F("DPAD_LEFT")); break;
     case PS2Button::L2: output.print(F("L2")); break;
     case PS2Button::R2: output.print(F("R2")); break;
     case PS2Button::L1: output.print(F("L1")); break;
     case PS2Button::R1: output.print(F("R1")); break;
-    case PS2Button::Triangle: output.print(F("Triangle")); break;
-    case PS2Button::Circle: output.print(F("Circle")); break;
-    case PS2Button::Cross: output.print(F("Cross")); break;
-    case PS2Button::Square: output.print(F("Square")); break;
+    case PS2Button::Triangle: output.print(F("TRIANGLE")); break;
+    case PS2Button::Circle: output.print(F("CIRCLE")); break;
+    case PS2Button::Cross: output.print(F("CROSS")); break;
+    case PS2Button::Square: output.print(F("SQUARE")); break;
   }
 }
 
@@ -489,7 +489,7 @@ uint16_t TungLamPS2::buttons() const {
 
 void TungLamPS2::debug(Stream& output) {
   if (!debugInitialized_) {
-    output.println(F("[PS2] Debug monitor started"));
+    // Baseline ban đầu cũng chỉ in đúng một dòng.
     printState(output);
 
     debugInitialized_ = true;
@@ -501,58 +501,120 @@ void TungLamPS2::debug(Stream& output) {
     return;
   }
 
-  if (status_ != debugLastStatus_) {
-    output.print(F("[PS2] STATUS "));
-    printConnectionStatus(output, status_);
-    output.println();
-  }
-
-  for (uint8_t bit = 0; bit < 16; ++bit) {
-    const uint16_t mask = static_cast<uint16_t>(1U << bit);
-    const PS2Button key = static_cast<PS2Button>(mask);
-
-    if ((pressedButtons_ & mask) != 0) {
-      output.print(F("[PS2] BUTTON "));
-      printButtonName(output, key);
-      output.println(F(" PRESSED"));
-    }
-
-    if ((releasedButtons_ & mask) != 0) {
-      output.print(F("[PS2] BUTTON "));
-      printButtonName(output, key);
-      output.println(F(" RELEASED"));
-    }
-  }
-
   const PS2StickDirection left = leftStick_.direction();
-  if (left != debugLastLeftDirection_) {
-    output.print(F("[PS2] LEFT "));
-    printStickDirection(output, left);
-    output.print(F(" x="));
-    output.print(leftStick_.x());
-    output.print(F(" y="));
-    output.println(leftStick_.y());
-  }
-
   const PS2StickDirection right = rightStick_.direction();
-  if (right != debugLastRightDirection_) {
-    output.print(F("[PS2] RIGHT "));
+
+  const bool linkChanged = status_ != debugLastStatus_;
+  const bool buttonChanged =
+      pressedButtons_ != 0 || releasedButtons_ != 0;
+  const bool leftChanged = left != debugLastLeftDirection_;
+  const bool rightChanged = right != debugLastRightDirection_;
+  const bool errorChanged = errorCount_ != debugLastErrorCount_;
+  const bool reconnectChanged =
+      reconnectCount_ != debugLastReconnectCount_;
+
+  if (!linkChanged &&
+      !buttonChanged &&
+      !leftChanged &&
+      !rightChanged &&
+      !errorChanged &&
+      !reconnectChanged) {
+    return;
+  }
+
+  output.print(F("[PS2] "));
+  bool hasField = false;
+
+  if (linkChanged) {
+    output.print(F("LINK="));
+    printConnectionStatus(output, status_);
+    hasField = true;
+  }
+
+  if (buttonChanged) {
+    if (hasField) {
+      output.print(F(" | "));
+    }
+
+    output.print(F("BTN="));
+    bool firstButton = true;
+
+    for (uint8_t bit = 0; bit < 16; ++bit) {
+      const uint16_t mask = static_cast<uint16_t>(1U << bit);
+      const PS2Button key = static_cast<PS2Button>(mask);
+
+      if ((pressedButtons_ & mask) != 0) {
+        if (!firstButton) {
+          output.print(F(","));
+        }
+        printButtonName(output, key);
+        output.print(F(":PRESSED"));
+        firstButton = false;
+      }
+
+      if ((releasedButtons_ & mask) != 0) {
+        if (!firstButton) {
+          output.print(F(","));
+        }
+        printButtonName(output, key);
+        output.print(F(":RELEASED"));
+        firstButton = false;
+      }
+    }
+
+    hasField = true;
+  }
+
+  if (leftChanged) {
+    if (hasField) {
+      output.print(F(" | "));
+    }
+
+    output.print(F("LEFT="));
+    printStickDirection(output, left);
+    output.print(F("("));
+    output.print(leftStick_.x());
+    output.print(F(","));
+    output.print(leftStick_.y());
+    output.print(F(")"));
+    hasField = true;
+  }
+
+  if (rightChanged) {
+    if (hasField) {
+      output.print(F(" | "));
+    }
+
+    output.print(F("RIGHT="));
     printStickDirection(output, right);
-    output.print(F(" x="));
+    output.print(F("("));
     output.print(rightStick_.x());
-    output.print(F(" y="));
-    output.println(rightStick_.y());
+    output.print(F(","));
+    output.print(rightStick_.y());
+    output.print(F(")"));
+    hasField = true;
   }
 
-  if (errorCount_ != debugLastErrorCount_) {
-    output.print(F("[PS2] ERRORS "));
-    output.println(errorCount_);
+  if (errorChanged) {
+    if (hasField) {
+      output.print(F(" | "));
+    }
+
+    output.print(F("ERR="));
+    output.print(errorCount_);
+    hasField = true;
   }
 
-  if (reconnectCount_ != debugLastReconnectCount_) {
-    output.print(F("[PS2] RECONNECTS "));
-    output.println(reconnectCount_);
+  if (reconnectChanged) {
+    if (hasField) {
+      output.print(F(" | "));
+    }
+
+    output.print(F("REC="));
+    output.print(reconnectCount_);
   }
+
+  output.println();
 
   debugLastStatus_ = status_;
   debugLastLeftDirection_ = left;
@@ -562,41 +624,41 @@ void TungLamPS2::debug(Stream& output) {
 }
 
 void TungLamPS2::printState(Stream& output) const {
-  output.print(F("[PS2] status="));
+  output.print(F("[PS2][STATE] LINK="));
   printConnectionStatus(output, status_);
 
-  output.print(F(" buttons=0x"));
+  output.print(F(" BUTTONS=0x"));
   output.print(buttons_, HEX);
 
-  output.print(F(" left="));
+  output.print(F(" LEFT="));
   printStickDirection(output, leftStick_.direction());
   output.print(F("("));
   output.print(leftStick_.x());
   output.print(F(","));
   output.print(leftStick_.y());
-  output.print(F(") raw("));
+  output.print(F(") RAW("));
   output.print(leftStick_.rawX());
   output.print(F(","));
   output.print(leftStick_.rawY());
   output.print(F(")"));
 
-  output.print(F(" right="));
+  output.print(F(" RIGHT="));
   printStickDirection(output, rightStick_.direction());
   output.print(F("("));
   output.print(rightStick_.x());
   output.print(F(","));
   output.print(rightStick_.y());
-  output.print(F(") raw("));
+  output.print(F(") RAW("));
   output.print(rightStick_.rawX());
   output.print(F(","));
   output.print(rightStick_.rawY());
   output.print(F(")"));
 
-  output.print(F(" packets="));
+  output.print(F(" PACKETS="));
   output.print(packetCount_);
-  output.print(F(" errors="));
+  output.print(F(" ERRORS="));
   output.print(errorCount_);
-  output.print(F(" reconnects="));
+  output.print(F(" RECONNECTS="));
   output.println(reconnectCount_);
 }
 

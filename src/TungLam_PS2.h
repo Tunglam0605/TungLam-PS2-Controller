@@ -217,10 +217,13 @@ class TungLamPS2 {
    *   ps2.debug(Serial);
    *
    * Chỉ in khi có thay đổi đáng chú ý:
-   * - trạng thái kết nối thay đổi;
-   * - nút vừa nhấn / vừa nhả;
-   * - joystick đổi hướng;
-   * - error/reconnect counter thay đổi.
+   * Mỗi lần có thay đổi chỉ in MỘT dòng tổng hợp, ví dụ:
+   *
+   *   [PS2] LINK=CONNECTED_ANALOG | BTN=CROSS:PRESSED
+   *         | LEFT=UP(1,-117) | RIGHT=CENTER(0,2) | ERR=0 | REC=0
+   *
+   * Trên Serial Monitor dòng có thể tự wrap theo chiều rộng cửa sổ,
+   * nhưng thư viện chỉ phát một newline cho mỗi event snapshot.
    *
    * Nếu không gọi debug(), core driver không tạo Serial output.
    *

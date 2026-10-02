@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.1 - 2026-10-02
+
+### Changed
+- Debug monitor output is now human-readable and consolidated.
+- Each change snapshot produces exactly one newline.
+- Multiple simultaneous changes are combined with ` | `.
+- Button events use `BTN=NAME:PRESSED/RELEASED`.
+- Joystick events use `LEFT/RIGHT=DIRECTION(X,Y)`.
+- Link, error and reconnect state can share the same line.
+- Debug remains event-driven: no output is produced while state is unchanged.
+
 ## 0.3.0 - 2026-10-02
 
 ### Added
