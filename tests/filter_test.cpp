@@ -22,9 +22,14 @@ int main() {
   filter.push(129, 127);
   assert(filter.direction() == PS2StickDirection::Center);
 
+  // Median-of-3 cố ý không phản ứng theo một spike đơn lẻ.
+  filter.push(128, 10);
+  assert(filter.direction() == PS2StickDirection::Center);
+
+  // Khi median đã rời tâm, hướng mới vẫn phải qua stable-sample confirmation.
   filter.push(128, 10);
   assert(filter.direction() == PS2StickDirection::Unknown);
-  filter.push(128, 10);
+
   filter.push(128, 10);
   assert(filter.direction() == PS2StickDirection::Up);
 
