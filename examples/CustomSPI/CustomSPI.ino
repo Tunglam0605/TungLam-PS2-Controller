@@ -1,24 +1,32 @@
+/**
+ * @file CustomSPI.ino
+ * @brief Chọn trực tiếp SPI bus khi board có nhiều SPI peripheral.
+ *
+ * Cách gọi:
+ *   ps2.begin(SPI, 10);
+ *   ps2.begin(SPI1, 7);   // nếu Arduino Core của board có SPI1
+ *   ps2.begin(SPI2, 7);   // nếu có SPI2
+ *
+ * Quy tắc đấu dây:
+ *   DAT/MISO -> MISO của chính bus đã truyền vào
+ *   CMD/MOSI -> MOSI của chính bus đã truyền vào
+ *   CLK/SCK  -> SCK của chính bus đã truyền vào
+ *   CS/ATT   -> csPin
+ *
+ * Library không hard-code concrete SPI class nên API có thể dùng trên
+ * nhiều Arduino Core khác nhau.
+ */
+
 #include <TungLam_PS2.h>
 
 TungLamPS2 ps2;
 
 void setup() {
-  Serial.begin(115200);
-
-  // Cách tổng quát: truyền trực tiếp SPI bus.
-  //
-  // Với ps2.begin(SPI, 10):
-  //   DAT/MISO -> MISO của SPI
-  //   CMD/MOSI -> MOSI của SPI
-  //   CLK/SCK  -> SCK của SPI
-  //   CS/ATT   -> D10
+  // Ví dụ portable: dùng object SPI mặc định nhưng gọi overload có bus.
   ps2.begin(SPI, 10);
 
-  // Trên board/core có SPI1 hoặc SPI2:
+  // Ví dụ khi board hỗ trợ:
   // ps2.begin(SPI1, 7);
-  //
-  // Khi đó DAT/CMD/CLK phải nối vào MISO/MOSI/SCK của SPI1,
-  // còn CS/ATT nối vào D7.
 }
 
 void loop() {

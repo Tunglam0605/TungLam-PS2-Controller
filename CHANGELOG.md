@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0 - 2026-10-02
+
+### Documentation
+- Expanded Vietnamese Doxygen comments for public enums and APIs.
+- Documented update/connected/status/counters semantics.
+- Documented held/pressed/released button behavior and one-shot edge semantics.
+- Documented filtered joystick coordinates, raw values and axis conventions.
+- Documented calibration, timing profiles, poll rate and advanced timing APIs.
+- Expanded joystick filter documentation in Vietnamese.
+- Added `docs/HUONG_DAN_SU_DUNG_VI.md`.
+
+### Examples
+- Reworked examples to avoid teaching Serial spam or delay-based polling.
+- Added detailed purpose, wiring and expected behavior comments.
+- Added `ConnectionRecovery` for fail-safe/reconnect testing.
+- `JoystickDirections` now prints only on direction changes.
+- `BasicSPI` only prints initialization result once.
+- `BasicRead` demonstrates production usage with no Serial and no delay.
+
 ## 0.3.1 - 2026-10-02
 
 ### Changed

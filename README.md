@@ -2,6 +2,31 @@
 
 Thư viện đọc tay cầm PS2 dành cho Arduino/robotics, thiết kế theo hướng **đa board, linh hoạt, an toàn và dễ dùng**.
 
+## Triết lý sử dụng
+
+Thư viện tách rõ **đường chạy production** và **đường debug**:
+
+```text
+Production:
+  ps2.update()
+  -> không Serial
+  -> không delay theo poll rate
+  -> đọc state đã lọc
+
+Debug:
+  ps2.update()
+  ps2.debug(Serial)
+  -> chỉ in khi state thay đổi
+  -> một newline cho mỗi snapshot
+
+Service/raw:
+  ps2.printState(Serial)
+  -> luôn in khi được gọi
+  -> người dùng tự rate-limit
+```
+
+Nút và joystick không gắn cứng chức năng robot. Thư viện chỉ chuẩn hóa input; project quyết định hành vi.
+
 ## Mục tiêu
 
 - Không bắt người dùng tự đọc `LX/LY/RX/RY`, trừ tâm rồi viết lại hàng loạt `if`.
@@ -322,13 +347,19 @@ if (millis() - lastPrint >= 100) {
 
 ### Examples
 
-- `BasicRead` — cách dùng production, không Serial.
-- `ButtonEvents` — test held / pressed / released.
-- `DebugMonitor` — debug theo sự kiện, không spam.
-- `RawAnalogTest` — xem raw/filtered joystick có rate-limit.
-- `BasicSPI` — khởi tạo hardware SPI mặc định.
-- `CustomSPI` — truyền SPI bus cụ thể.
-- `LegacyBitBang` — tự chọn CLK/CMD/CS/DAT.
+| Example | Mục đích | Serial |
+|---|---|---|
+| `BasicRead` | Khung production tối thiểu: update, connected, button, joystick | Không dùng |
+| `BasicSPI` | Học cách đấu dây và gọi `begin(CS)` | Chỉ in kết quả init một lần |
+| `ButtonEvents` | Phân biệt `button()`, `pressed()`, `released()` | Chỉ in edge event |
+| `JoystickDirections` | Xem hướng LEFT/RIGHT joystick sau lọc | Chỉ in khi hướng thay đổi |
+| `DebugMonitor` | Debug toàn tay cầm theo event | Một dòng/snapshot thay đổi |
+| `RawAnalogTest` | Xem raw + filtered + counters để tune | Rate-limit 10 Hz |
+| `ConnectionRecovery` | Test rút/cắm receiver, fail-safe và reconnect | Chỉ in khi link đổi |
+| `CustomSPI` | Chọn trực tiếp `SPI`, `SPI1`, `SPI2` | Không dùng |
+| `LegacyBitBang` | Giữ wiring GPIO cũ CLK/CMD/CS/DAT | Không dùng |
+
+Hướng dẫn tiếng Việt đầy đủ: `docs/HUONG_DAN_SU_DUNG_VI.md`.
 
 ### Semantics của button edge
 

@@ -1,21 +1,36 @@
+/**
+ * @file JoystickDirections.ino
+ * @brief Test hướng cuối cùng của hai joystick mà không spam Serial.
+ *
+ * Chỉ in khi hướng LEFT hoặc RIGHT joystick thực sự thay đổi.
+ * Không có delay() và không map analog trực tiếp thành tốc độ robot.
+ */
+
 #include <TungLam_PS2.h>
 
 TungLamPS2 ps2;
+constexpr uint8_t PS2_CS_PIN = 10;
 
-const char* directionName(PS2StickDirection direction) {
+PS2StickDirection lastLeft = PS2StickDirection::Unknown;
+PS2StickDirection lastRight = PS2StickDirection::Unknown;
+bool firstPrint = true;
+
+const __FlashStringHelper* directionName(PS2StickDirection direction) {
   switch (direction) {
-    case PS2StickDirection::Center: return "CENTER";
-    case PS2StickDirection::Up: return "UP";
-    case PS2StickDirection::Down: return "DOWN";
-    case PS2StickDirection::Left: return "LEFT";
-    case PS2StickDirection::Right: return "RIGHT";
-    default: return "UNKNOWN";
+    case PS2StickDirection::Center: return F("CENTER");
+    case PS2StickDirection::Up: return F("UP");
+    case PS2StickDirection::Down: return F("DOWN");
+    case PS2StickDirection::Left: return F("LEFT");
+    case PS2StickDirection::Right: return F("RIGHT");
+    default: return F("UNKNOWN");
   }
 }
 
 void setup() {
   Serial.begin(115200);
-  ps2.begin(10);
+  ps2.begin(PS2_CS_PIN);
+
+  Serial.println(F("[TEST] PS2 joystick directions"));
 }
 
 void loop() {
@@ -25,17 +40,32 @@ void loop() {
     return;
   }
 
-  Serial.print("Left: ");
-  Serial.print(directionName(ps2.leftDirection()));
+  const PS2StickDirection left = ps2.leftDirection();
+  const PS2StickDirection right = ps2.rightDirection();
 
-  Serial.print("  Right: ");
-  Serial.println(directionName(ps2.rightDirection()));
+  // Chỉ in khi state thay đổi -> Serial Monitor rất dễ đọc.
+  if (firstPrint || left != lastLeft || right != lastRight) {
+    Serial.print(F("[JOY] LEFT="));
+    Serial.print(directionName(left));
+    Serial.print(F("("));
+    Serial.print(ps2.leftX());
+    Serial.print(F(","));
+    Serial.print(ps2.leftY());
+    Serial.print(F(") | RIGHT="));
+    Serial.print(directionName(right));
+    Serial.print(F("("));
+    Serial.print(ps2.rightX());
+    Serial.print(F(","));
+    Serial.print(ps2.rightY());
+    Serial.println(F(")"));
 
-  // Thư viện KHÔNG map joystick thành tốc độ.
-  // Người lập trình tự quyết định hành vi.
-  if (ps2.leftDirection() == PS2StickDirection::Up) {
-    // robot.forward(180);
+    firstPrint = false;
+    lastLeft = left;
+    lastRight = right;
   }
 
-  delay(50);
+  // Ví dụ ứng dụng:
+  // if (left == PS2StickDirection::Up) {
+  //   robot.forward(180);
+  // }
 }

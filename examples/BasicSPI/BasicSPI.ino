@@ -1,50 +1,39 @@
+/**
+ * @file BasicSPI.ino
+ * @brief Chỉ tập trung vào cách khởi tạo PS2 bằng SPI mặc định của board.
+ *
+ * Khi gọi ps2.begin(CS_PIN):
+ * - DAT/MISO -> chân MISO/CIPO mặc định của board.
+ * - CMD/MOSI -> chân MOSI/COPI mặc định của board.
+ * - CLK/SCK  -> chân SCK mặc định của board.
+ * - CS/ATT   -> GPIO do bạn chọn.
+ *
+ * Ví dụ Mega 2560 nếu CS=D10:
+ *   DAT -> D50, CMD -> D51, CLK -> D52, CS -> D10.
+ *
+ * Serial trong ví dụ này chỉ in kết quả begin() MỘT LẦN.
+ */
+
 #include <TungLam_PS2.h>
 
 TungLamPS2 ps2;
+constexpr uint8_t PS2_CS_PIN = 10;
 
 void setup() {
   Serial.begin(115200);
 
-  // Hardware SPI mặc định của board.
-  //
-  // Arduino Mega 2560:
-  //   PS2 DAT/MISO -> D50
-  //   PS2 CMD/MOSI -> D51
-  //   PS2 CLK/SCK  -> D52
-  //   PS2 CS/ATT   -> D10 trong ví dụ này
-  //   PS2 GND      -> GND
-  //   PS2 VCC      -> nguồn đúng theo module receiver
-  //
-  // Với board khác, nối DAT/CMD/CLK vào MISO/MOSI/SCK
-  // của SPI mặc định của board.
-  if (!ps2.begin(10)) {
-    Serial.println("PS2 not found");
-  }
+  const bool ready = ps2.begin(PS2_CS_PIN);
 
-  // Mặc định đã là 50 Hz.
-  // Có thể chọn 20/50/100 Hz nếu muốn:
-  ps2.setPollRate(PS2PollRate::Hz50);
+  Serial.print(F("[INIT] PS2="));
+  Serial.println(ready ? F("READY") : F("NOT_READY - update() se tu recovery"));
+
+  // 50 Hz là mặc định, không bắt buộc gọi dòng này.
+  // ps2.setPollRate(PS2PollRate::Hz50);
 }
 
 void loop() {
+  // Không cần delay().
   ps2.update();
 
-  if (!ps2.connected()) {
-    return;
-  }
-
-  // 1) Đang giữ.
-  if (ps2.button(PS2Button::R1)) {
-    Serial.println("R1 held");
-  }
-
-  // 2) Vừa nhấn.
-  if (ps2.pressed(PS2Button::Cross)) {
-    Serial.println("Cross pressed");
-  }
-
-  // 3) Vừa nhả.
-  if (ps2.released(PS2Button::Square)) {
-    Serial.println("Square released");
-  }
+  // Không Serial.print() trong loop ở ví dụ khởi tạo này.
 }
